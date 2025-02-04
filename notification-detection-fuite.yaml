@@ -1,0 +1,31 @@
+blueprint:
+  name: Détection de fuite et notification
+  description: Envoie une notification dès qu'un détecteur de fuite d'eau est déclenché
+  domain: automation
+  input:
+    notify_device:
+      name: Notifier l'appareil
+      description: "Choisir l'appareil sur lequel envoyer une notification."
+      selector:
+        device:
+          integration: mobile_app
+
+trigger:
+  - event_data: {}
+    event_type: state_changed
+    platform: event
+
+condition:
+  - condition: template
+    value_template: '{{ trigger.event.data.new_state.attributes.device_class == "moisture" }}'
+  - condition: template
+    value_template: '{{ trigger.event.data.new_state.state == "on" }}'
+
+action:
+  domain: mobile_app
+  type: notify
+  device_id: !input notify_device
+  message: "{{ trigger.event.data.new_state.attributes.friendly_name }} a détecté une fuite."
+  title: "Fuite détectée!"
+
+mode: single
